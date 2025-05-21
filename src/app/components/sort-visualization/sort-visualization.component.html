@@ -1,0 +1,37 @@
+<div *ngIf="originalNumbers?.length && algorithmStates?.length">
+  <div class="visualization-section1">
+    <h2>Visualization (1 algo)</h2>
+  </div>
+
+  <div class="charts-container">
+    <!-- Original Chart -->
+    <div class="chart-wrapper original-chart">
+      <h3>Original (unsorted)</h3>
+      <div class="bar-chart">
+        <div *ngFor="let num of originalNumbers" class="bar-wrapper">
+          <div
+            class="bar"
+            [style.height.px]="num"
+            style="background-color: #aaa"
+          ></div>
+          <div class="bar-label">{{ num }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sorted Chart -->
+    <div class="chart-wrapper">
+      <h3>{{ algorithmNames[algorithmStates[0].name] }}</h3>
+      <div class="bar-chart">
+        <div *ngFor="let num of algorithmStates[0].numbers" class="bar-wrapper">
+          <div
+            class="bar"
+            [style.height.px]="num"
+            style="background-color: #2196f3"
+          ></div>
+          <div class="bar-label">{{ num }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,155 @@
+<div class="sort-lab-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="back">
+<!--      <button mat-button (click)="goBack()">Back to Get Start</button>-->
+      <div class="container-logo">
+        <img src="assets/images/ChatGPT%20Image%20May%208,%202025,%2003_55_53%20PM.png" alt="logo" class="logo" />
+<!--        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFeJQxulVPwUHiZl44TI_mWBY7j8IVwGdvmA&s" alt="logo" class="logo" />-->
+        <h1>Sort Lab</h1>
+      </div>
+    </div>
+    <div class="mode-selector">
+      <button mat-raised-button [color]="mode === 'single' ? 'primary' : ''" (click)="setMode('single')">1 Algo</button>
+      <button mat-raised-button [color]="mode === 'dual' ? 'primary' : ''" (click)="setMode('dual')">2 Algo</button>
+      <button mat-raised-button [color]="mode === 'all' ? 'primary' : ''" (click)="setMode('all')">6 Algo</button>
+    </div>
+  </header>
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Input Section -->
+    <section class="input-section">
+            <div class="original-chart" *ngIf="mode === 'single'">
+                <div>
+                    <div class="bar-cuong">
+                        <div *ngFor="let num of numbers" class="bar-original">
+                            <div
+                                class="bar-wrap"
+                                [style.height.px]="getCompactBarHeight(num, numbers)"
+                                [style.width.px]="getCompactBarWidth(numbers)"
+                                [style.backgroundColor]="'rgb(98 55 174)'"
+                            ></div>
+                            <div class="bar-label">{{ num }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+      <h2>Input Data</h2>
+      <div class="input-list">
+        <div *ngFor="let num of numbers; let i = index; trackBy: trackByIndex" class="input-item">
+          <input
+            type="text"
+            [(ngModel)]="numbers[i]"
+            name="number-{{ i }}"
+            (focus)="storePreviousValue(i)"
+            (keydown)="handleKeydown($event, i)"
+            inputmode="numeric"
+            pattern="[0-9]*"
+          />
+          <button mat-icon-button (click)="removeNumber(i)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="add-input">
+        <input type="number" placeholder="Add a number..." [(ngModel)]="newNumber" />
+        <button mat-raised-button color="primary" (click)="addNumber()">+ Add Value</button>
+      </div>
+      <div class="input-actions">
+        <button mat-raised-button (click)="randomize()">Random</button>
+        <button mat-raised-button (click)="clear()">Clear</button>
+        <button mat-raised-button color="primary" (click)="submit()">Submit</button>
+      </div>
+    </section>
+    <section class="visualization-section">
+      <div class="visualization-section1">
+        <h2>Visualization ({{ mode === 'single' ? '1 algo' : mode === 'dual' ? 'compare 2 algo' : 'compare 6 algo' }})</h2>
+        <div class="algorithm-selection">
+          <div class="algorithm-selectors">
+            <mat-form-field appearance="fill" *ngIf="mode === 'single' || mode === 'dual'" class="custom-select">
+              <mat-label>Algorithm 1</mat-label>
+              <mat-select [(value)]="selectedAlgorithm" (selectionChange)="reset()">
+                <mat-option *ngFor="let algo of algorithms" [value]="algo">{{ algorithmNames[algo] }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="fill" *ngIf="mode === 'dual'" class="custom-select">
+              <mat-label>Algorithm 2</mat-label>
+              <mat-select [(value)]="selectedAlgorithm2" (selectionChange)="reset()">
+                <mat-option *ngFor="let algo of getAvailableAlgorithmsForSecondDropdown()" [value]="algo">{{ algorithmNames[algo] }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-container" [ngClass]="mode">
+        <div *ngFor="let state of algorithmStates" class="chart-wrapper" [attr.data-algo]="state.name">
+          <h3>{{ algorithmNames[state.name] }} ({{ getExecutionTime(state) }})</h3>
+          <div class="bar-chart">
+            <div *ngFor="let num of state.numbers; let i = index" class="bar-wrapper">
+              <div
+                class="bar"
+                [style.height.px]="getBarHeight(num, state.numbers)"
+                [style.width.px]="getBarWidth(state.numbers)"
+                [style.backgroundColor]="getBarColor(i, state)"
+              ></div>
+              <div class="bar-label">{{ num }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="pe" *ngIf="mode === 'single'">
+              <div class="pe1">
+                <app-code-highlight [codeLines]="pseudoCodes[selectedAlgorithm]" [activeLine]="currentLineIndex"></app-code-highlight>
+                <app-sorting-chart
+                  [algorithm]="selectedAlgorithm"
+                  (stepChange)="currentLineIndex = $event">
+                </app-sorting-chart>
+              </div>
+          <div class="pe2">
+                  <section class="description-section">
+                    <h2>Instructions</h2>
+                    <div class="algorithm-overview">
+                            <h3>Algorithm Overview</h3>
+                            <p>{{ algorithmDescription }}</p>
+<!--                            <h3>Input Data</h3>-->
+<!--                            <p>{{ numbers.join(', ') }}</p>-->
+                    </div>
+                    <div class="current-actions">
+                      <h3>Current Actions</h3>
+                      <p>{{ currentAction }}</p>
+                    </div>
+                  </section>
+          </div>
+            </div>
+      </div>
+      <section class="control-section">
+        <div class="controls">
+          <button mat-raised-button color="primary" (click)="play()">{{ playButtonText }}</button>
+          <button mat-raised-button (click)="togglePause()">
+            {{ isPaused ? 'Resume' : 'Pause' }}
+          </button>
+
+          <button mat-raised-button color="warn" (click)="reset()">Reset</button>
+          <button mat-raised-button *ngIf="mode === 'single'" (click)="backStep()" [disabled]="!canGoBack()">Back Step</button>
+          <button mat-raised-button *ngIf="mode === 'single'" (click)="nextStep()">Next Step</button>
+
+          <div class="speed-control">
+            <span>Speed:</span>
+            <mat-slider
+              class="speed-slider"
+              [min]="1"
+              [max]="10"
+              [step]="1"
+              thumbLabel
+              [displayWith]="formatSpeedLabel"
+              [(ngModel)]="speed"
+              (input)="onSpeedChange($event)"
+            >
+              <input matSliderThumb />
+            </mat-slider>
+          </div>
+        </div>
+      </section>
+    </section>
+  </div>
+</div>
